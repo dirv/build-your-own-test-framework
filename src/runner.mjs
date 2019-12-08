@@ -35,8 +35,14 @@ export const run = async () => {
 const indent = (message) =>
   `${" ".repeat(describeStack.length * 2)}${message}`;
 
+const invokeBefores = () =>
+  describeStack
+    .flatMap((describe) => describe.befores)
+    .forEach((before) => before());
+
 export const it = (name, body) => {
   try {
+    invokeBefores();
     body();
     console.log(
       indent(color(`<green>✓</green> ${name}`))
@@ -53,8 +59,8 @@ export const it = (name, body) => {
 };
 
 const fullTestDescription = ({ name, describeStack }) =>
-  [...describeStack, name]
-    .map((name) => `<bold>${name}</bold>`)
+  [...describeStack, { name }]
+    .map(({ name }) => `<bold>${name}</bold>`)
     .join(" → ");
 
 export const printFailure = (failure) => {
@@ -72,11 +78,31 @@ export const printFailures = () => {
   failures.forEach(printFailure);
 };
 
+const makeDescribe = (name) => ({
+  name,
+  befores: [],
+  afters: [],
+});
+
 const withoutLast = (arr) => arr.slice(0, -1);
 
 export const describe = (name, body) => {
   console.log(indent(name));
-  describeStack = [...describeStack, name];
+  describeStack = [...describeStack, makeDescribe(name)];
   body();
   describeStack = withoutLast(describeStack);
+};
+
+const last = (arr) => arr[arr.length - 1];
+
+export const beforeEach = (body) => {
+  const newDescribe = {
+    ...last(describeStack),
+    befores: [...last(describeStack).befores, body],
+  };
+
+  describeStack = [
+    ...withoutLast(describeStack),
+    newDescribe,
+  ];
 };
