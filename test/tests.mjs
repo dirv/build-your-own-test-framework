@@ -1,6 +1,6 @@
 import { emptyTodo, markAsDone } from "../src/todo.mjs";
 import { TodoRepository } from "../src/todoRepository.mjs";
-import { describe, it } from "concise-test";
+import { beforeEach, describe, it } from "concise-test";
 
 describe("todo", () => {
   it("sets completedAt when calling markAsDone", () => {
@@ -14,10 +14,15 @@ describe("todo", () => {
 });
 
 describe("TodoRepository", () => {
+  const newTodo = { ...emptyTodo(), title: "test" };
+  let repository;
+
+  beforeEach(() => {
+    repository = new TodoRepository();
+  });
+
   describe("add", () => {
     it("throws an exception when adding a todo without a title", () => {
-      const repository = new TodoRepository();
-
       try {
         repository.add(emptyTodo());
         throw new Error(
@@ -52,11 +57,11 @@ describe("TodoRepository", () => {
   });
 
   describe("findAllMatching", () => {
-    it("finds an added todo", () => {
-      const repository = new TodoRepository();
-      const newTodo = { ...emptyTodo(), title: "test" };
+    beforeEach(() => {
       repository.add(newTodo);
+    });
 
+    it("finds an added todo", () => {
       if (repository.findAllMatching("").length !== 1)
         throw new Error("added todo was not returned");
     });
