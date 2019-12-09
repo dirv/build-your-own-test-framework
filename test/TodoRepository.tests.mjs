@@ -1,4 +1,4 @@
-import { emptyTodo, markAsDone } from "../src/todo.mjs";
+import { emptyTodo } from "../src/todo.mjs";
 import { TodoRepository } from "../src/todoRepository.mjs";
 import {
   beforeEach,
@@ -6,14 +6,6 @@ import {
   expect,
   it,
 } from "concise-test";
-
-describe("todo", () => {
-  it("sets completedAt when calling markAsDone", () => {
-    const todo = emptyTodo();
-
-    expect(markAsDone(todo).completedAt).toBeDefined();
-  });
-});
 
 describe("TodoRepository", () => {
   const newTodo = { ...emptyTodo(), title: "test" };
