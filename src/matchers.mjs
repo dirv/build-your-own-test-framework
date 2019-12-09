@@ -1,39 +1,43 @@
 import { EOL } from "os";
-import { color } from "./colors.mjs";
+import { ExpectationError } from "./ExpectationError.mjs";
 
 export const toBeDefined = (actual) => {
   if (actual === undefined) {
-    throw new Error(
-      "Expected undefined value to be defined"
-    );
+    throw new ExpectationError("<actual> to be defined", {
+      actual,
+    });
   }
 };
 
-export const toThrow = (fn, expected) => {
+export const toThrow = (source, expected) => {
   try {
-    fn();
-    throw new Error(
-      `Expected ${fn} to throw exception but it did not`
+    source();
+    throw new ExpectationError(
+      "<source> to throw exception but it did not",
+      { source }
     );
   } catch (actual) {
     if (expected && actual.message !== expected.message)
-      throw new Error(
-        `Expected ${fn} to throw an exception, but the thrown error message did not match the expected message.` +
+      throw new ExpectationError(
+        "<source> to throw an exception, but the thrown error message did not match the expected message." +
           EOL +
-          `  Expected exception message: ${expected.message}` +
+          "  Expected exception message: <expected>" +
           EOL +
-          `    Actual exception message: ${actual.message}` +
-          EOL
+          "    Actual exception message: <actual>",
+        {
+          source,
+          actual: actual.message,
+          expected: expected.message,
+        }
       );
   }
 };
 
 export const toHaveLength = (actual, expected) => {
   if (actual.length !== expected) {
-    throw new Error(
-      color(
-        `Expected value to have length <bold>${expected}</bold> but it was <bold>${actual.length}</bold>`
-      )
+    throw new ExpectationError(
+      "value to have length <expected> but it was <actual>",
+      { actual: actual.length, expected }
     );
   }
 };
