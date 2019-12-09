@@ -1,4 +1,5 @@
 import path from "path";
+import fs from "fs";
 import { color } from "./colors.mjs";
 import * as matchers from "./matchers.mjs";
 import { ExpectationError } from "./ExpectationError.mjs";
@@ -16,10 +17,29 @@ const exitCodes = {
   failures: 1,
 };
 
+const discoverTestFiles = async () => {
+  const testDir = path.resolve(process.cwd(), "test");
+  const dir = await fs.promises.opendir(testDir);
+  let testFilePaths = [];
+  for await (const dirent of dir) {
+    if (dirent.name.endsWith(".tests.mjs")) {
+      const fullPath = path.resolve(
+        dir.path,
+        dirent.name
+      );
+      testFilePaths.push(fullPath);
+    }
+  }
+  return testFilePaths;
+};
+
 export const run = async () => {
   try {
-    await import(
-      path.resolve(process.cwd(), "test/tests.mjs")
+    const testFilePaths = await discoverTestFiles();
+    await Promise.all(
+      testFilePaths.map(async (testFilePath) => {
+        await import(testFilePath);
+      })
     );
   } catch (e) {
     console.error(e.message);
