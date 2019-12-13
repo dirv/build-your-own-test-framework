@@ -5,7 +5,7 @@
   "type": "module",
   "bin": "./src/cli.mjs",
   "exports": {
-    ".": "./src/runner.mjs"
+    ".": "./src/testContext.mjs"
   },
   "prettier": {
     "printWidth": 58
