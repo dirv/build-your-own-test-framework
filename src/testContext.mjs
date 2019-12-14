@@ -84,9 +84,6 @@ const isIt = (testObject) =>
 
 let describeStack = [];
 
-const indent = (message) =>
-  `${" ".repeat(describeStack.length * 2)}${message}`;
-
 const withoutLast = (arr) => arr.slice(0, -1);
 
 const runDescribe = async (describe) => {
@@ -97,9 +94,6 @@ const runDescribe = async (describe) => {
   }
   describeStack = withoutLast(describeStack);
 };
-
-let successes = 0;
-let failures = [];
 
 const timeoutPromise = () =>
   currentTest.timeoutError.createTimeoutPromise();
@@ -122,19 +116,7 @@ const runIt = async (test) => {
   } catch (e) {
     currentTest.errors.push(e);
   }
-  if (currentTest.errors.length > 0) {
-    console.log(
-      indent(color(`<red>✗</red> ${currentTest.name}`))
-    );
-    failures.push(currentTest);
-  } else {
-    successes++;
-    console.log(
-      indent(
-        color(`<green>✓</green> ${currentTest.name}`)
-      )
-    );
-  }
+  dispatch("finishedTest", currentTest);
   global.currentTest = null;
 };
 
@@ -163,10 +145,18 @@ const invokeAfters = () =>
 const runBlock = (block) =>
   isIt(block) ? runIt(block) : runDescribe(block);
 
+const anyFailed = (block) => {
+  if (isIt(block)) {
+    return block.errors.length > 0;
+  } else {
+    return block.children.some(anyFailed);
+  }
+};
+
 export const runParsedBlocks = async () => {
   const withFocus = focusedOnly(currentDescribe);
   for (let i = 0; i < withFocus.children.length; ++i) {
     await runBlock(withFocus.children[i]);
   }
-  return { successes, failures };
+  return anyFailed(withFocus);
 };
