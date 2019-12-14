@@ -1,5 +1,6 @@
 import { color } from "./colors.mjs";
 import { focusedOnly } from "./focus.mjs";
+import { TestTimeoutError } from "./TestTimeoutError.mjs";
 export { expect } from "./expect.mjs";
 
 let currentDescribe;
@@ -35,6 +36,7 @@ const makeTest = (name, body, options) => ({
   body,
   ...options,
   errors: [],
+  timeoutError: new TestTimeoutError(5000),
 });
 
 const itWithOpts = (name, body, options) => {
@@ -98,10 +100,13 @@ const runDescribe = async (describe) => {
 let successes = 0;
 let failures = [];
 
+const timeoutPromise = () =>
+  currentTest.timeoutError.createTimeoutPromise();
+
 const runBodyAndWait = async (body) => {
   const result = body();
   if (result instanceof Promise) {
-    await result;
+    await Promise.race([result, timeoutPromise()]);
   }
 };
 
@@ -131,6 +136,15 @@ const runIt = async (test) => {
   }
   global.currentTest = null;
 };
+
+const appendTimeout = (timeout) => {
+  currentTest = {
+    ...currentTest,
+    timeoutError: new TestTimeoutError(timeout),
+  };
+};
+
+addModifier(it, "timesOutAfter", appendTimeout, {});
 
 const invokeAll = (fnArray) =>
   fnArray.forEach((fn) => fn());
