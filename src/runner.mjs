@@ -37,3 +37,8 @@ export const it = (name, body) => {
     failures++;
   }
 };
+
+export const describe = (name, body) => {
+  console.log(name);
+  body();
+};
