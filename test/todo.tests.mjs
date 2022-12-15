@@ -6,7 +6,7 @@ import {
   it,
 } from "concise-test";
 
-describe("todo", () => {
+describe("todo", { tags: ["todo"] }, () => {
   it("sets completedAt when calling markAsDone", () => {
     const todo = emptyTodo();
 
