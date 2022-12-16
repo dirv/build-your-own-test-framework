@@ -1,13 +1,25 @@
 import { emptyTodo } from "../src/todo.mjs";
-import { TodoRepository } from "../src/todoRepository.mjs";
 import {
   beforeEach,
   describe,
   expect,
   it,
+  registerMock,
+  spy,
 } from "concise-test";
-
 import * as examples from "./list.shared.tests.mjs";
+
+registerMock(
+  "./src/api.mjs", // NOTE: this needs to be relative to the cwd, see Exercise 1
+  {
+    saveTodo: spy(),
+  }
+);
+
+const { TodoRepository } = await import(
+  "../src/TodoRepository.mjs"
+);
+const { saveTodo } = await import("../src/api.mjs");
 
 describe(
   "TodoRepository",
@@ -42,6 +54,11 @@ describe(
         expect(() =>
           repository.add(repeatedTodo)
         ).toThrow(new Error("todo already exists"));
+      });
+
+      it("calls saveTodo with the correct arguments", () => {
+        repository.add(newTodo);
+        expect(saveTodo).toBeCalledWith(newTodo);
       });
     });
 
