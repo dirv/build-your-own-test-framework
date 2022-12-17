@@ -1,5 +1,6 @@
 import { EOL } from "os";
 import { ExpectationError } from "./ExpectationError.mjs";
+export { toBeCalledWith } from "./spy.mjs";
 
 export const toBeDefined = (actual) => {
   if (actual === undefined) {
