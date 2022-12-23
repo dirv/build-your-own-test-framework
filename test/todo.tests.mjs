@@ -13,3 +13,10 @@ describe("todo", () => {
     expect(markAsDone(todo).completedAt).toBeDefined();
   });
 });
+
+describe("async tests", () => {
+  it("waits for a little bit", async () => {
+    //it.timesOutAfter(2000);
+    await new Promise((resolve, _) => setTimeout(resolve, 5000));
+  });
+});
