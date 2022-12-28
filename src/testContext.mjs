@@ -157,12 +157,34 @@ let describeStack = [];
 
 const withoutLast = (arr) => arr.slice(0, -1);
 
+const formatDescribeStack = (describeStack) =>
+  describeStack.map((describe) => describe.name);
+
+const formatDescribe = ({ name, sharedContextFn }) => ({
+  name,
+  sharedContextFn: sharedContextFn !== undefined,
+});
+
+const formatTest = ({ name, describeStack, errors }) => ({
+  name,
+  errors,
+  describeStack: formatDescribeStack(describeStack),
+});
+
 const runDescribe = async (describe) => {
   if (describe.skip) {
-    dispatch("skippingDescribe", describeStack, describe);
+    dispatch(
+      "skippingDescribe",
+      formatDescribeStack(describeStack),
+      formatDescribe(describe)
+    );
     return;
   }
-  dispatch("beginningDescribe", describeStack, describe);
+  dispatch(
+    "beginningDescribe",
+    formatDescribeStack(describeStack),
+    formatDescribe(describe)
+  );
   describeStack = [...describeStack, describe];
   for (let i = 0; i < describe.children.length; ++i) {
     await runBlock(describe.children[i]);
@@ -182,7 +204,7 @@ const runBodyAndWait = async (body) => {
 
 const runIt = async (test) => {
   if (test.skip || !test.body) {
-    dispatch("skippingTest", test);
+    dispatch("skippingTest", formatTest(test));
     return;
   }
   global.currentTest = test;
@@ -196,7 +218,7 @@ const runIt = async (test) => {
   } catch (e) {
     currentTest.errors.push(e);
   }
-  dispatch("finishedTest", currentTest);
+  dispatch("finishedTest", formatTest(currentTest));
   global.currentTest = null;
 };
 
